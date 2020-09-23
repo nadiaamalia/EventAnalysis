@@ -1,0 +1,246 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May  6 10:26:39 2020
+
+@author: nadiaamalia
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May  6 09:44:05 2020
+
+@author: nadiaamalia
+"""
+
+import pandas as pd
+import numpy as np
+import os
+import statsmodels.api as sm 
+import warnings 
+import itertools
+warnings.filterwarnings('ignore') 
+import matplotlib.pyplot as plt 
+import seaborn as sns
+sns.set()
+
+
+#import the data
+Project = pd.read_csv('/Users/nadiaamalia/Downloads/Project_Data.csv')
+Project['dates'] = pd.to_datetime(Project['dates'],format = '%m/%d/%y')
+Project = Project.set_index('dates')
+
+Project_df = pd.DataFrame(Project, columns = ['PERMNO','FiscY', 'PE', 'TICKER', 'COMNAM', 'Price']) 
+Project_df['Ret'] = Project_df['Price'].pct_change()
+Project_df = Project_df.dropna(how='any')           
+Project_df.dropna(how='any', inplace=True)
+
+#subset the data to 6 stocks
+ADX_df = Project_df.loc[Project_df['TICKER'] == 'ADX']
+ORCL_df = Project_df.loc[Project_df['TICKER'] == 'ORCL'] 
+ALD_df = Project_df.loc[Project_df['TICKER'] == 'ALD'] 
+HAVTA_df = Project_df.loc[Project_df['TICKER'] == 'HAVTA'] 
+HVT_df = Project_df.loc[Project_df['TICKER'] == 'HVT'] 
+CY_df = Project_df.loc[Project_df['TICKER'] == 'CY'] 
+
+#Event study for ADX
+
+
+#creating event window
+Event_ADX = (ADX_df[ADX_df.index.month == 1], 
+         ADX_df[ADX_df.index.month == 4],
+         ADX_df[ADX_df.index.month == 7],
+         ADX_df[ADX_df.index.month == 10])
+
+Event_ADX = pd.concat(Event_ADX)
+Event_ADX = Event_ADX.sort_values(by='dates')
+
+#Estimate window mean
+L_ADX = len(ADX_df)
+N_ADX = len(Event_ADX)
+
+mu_ADX = ADX_df['Ret'].mean()
+ab1_ADX = Event_ADX['Ret']-mu_ADX
+ab2_ADX = ADX_df['Ret']-mu_ADX
+
+
+sigma_ab2_ADX = sum(ab2_ADX**2)/(L_ADX-1)
+sigma_ab_ADX = np.sqrt(sigma_ab2_ADX)
+
+sigma_ab2_ADX
+
+V_ADX = np.identity(N_ADX)*sigma_ab2_ADX + np.full((N_ADX,N_ADX),sigma_ab2_ADX/sigma_ab2_ADX)
+gamma_ADX = np.ones((N_ADX,1))
+v_car_ADX = np.sqrt(gamma_ADX.T @ V_ADX @ gamma_ADX)
+
+scar_ADX = gamma_ADX.T @ ab1_ADX/v_car_ADX
+scar_ADX
+
+#Event study for ORCL
+
+#creating event window
+Event_ORCL = (ORCL_df[ORCL_df.index.month == 1], 
+         ORCL_df[ORCL_df.index.month == 4],
+         ORCL_df[ORCL_df.index.month == 7],
+         ORCL_df[ORCL_df.index.month == 10])
+
+Event_ORCL = pd.concat(Event_ORCL)
+Event_ORCL = Event_ORCL.sort_values(by='dates')
+
+#Estimate window mean
+L_ORCL = len(ORCL_df)
+N_ORCL = len(Event_ORCL)
+
+mu_ORCL = ORCL_df['Ret'].mean()
+ab1_ORCL = Event_ORCL['Ret']-mu_ORCL
+ab2_ORCL = ORCL_df['Ret']-mu_ORCL
+
+
+sigma_ab2_ORCL = sum(ab2_ORCL**2)/(L_ORCL-1)
+sigma_ab_ORCL = np.sqrt(sigma_ab2_ADX)
+
+sigma_ab2_ORCL
+
+V_ORCL = np.identity(N_ORCL)*sigma_ab2_ORCL + np.full((N_ORCL,N_ORCL),sigma_ab2_ORCL/sigma_ab2_ORCL)
+gamma_ORCL = np.ones((N_ORCL,1))
+v_car_ORCL = np.sqrt(gamma_ORCL.T @ V_ORCL @ gamma_ORCL)
+
+scar_ORCL = gamma_ORCL.T @ ab1_ORCL/v_car_ORCL
+scar_ORCL
+
+
+#Event study for ALD
+
+#creating event window
+Event_ALD = (ALD_df[ALD_df.index.month == 1], 
+         ALD_df[ALD_df.index.month == 4],
+         ALD_df[ALD_df.index.month == 7],
+         ALD_df[ALD_df.index.month == 10])
+
+Event_ALD = pd.concat(Event_ALD)
+Event_ALD = Event_ALD.sort_values(by='dates')
+
+#Estimate window mean
+L_ALD = len(ALD_df)
+N_ALD = len(Event_ALD)
+
+mu_ALD = ALD_df['Ret'].mean()
+ab1_ALD = Event_ALD['Ret']-mu_ALD
+ab2_ALD = ALD_df['Ret']-mu_ALD
+
+
+sigma_ab2_ALD = sum(ab2_ALD**2)/(L_ALD-1)
+sigma_ab_ALD = np.sqrt(sigma_ab2_ALD)
+
+sigma_ab2_ALD
+
+V_ALD = np.identity(N_ALD)*sigma_ab2_ALD + np.full((N_ALD,N_ALD),sigma_ab2_ALD/sigma_ab2_ALD)
+gamma_ALD = np.ones((N_ALD,1))
+v_car_ALD = np.sqrt(gamma_ALD.T @ V_ALD @ gamma_ALD)
+
+scar_ALD = gamma_ALD.T @ ab1_ALD/v_car_ALD
+scar_ALD
+
+
+#Event study for HAVTA
+
+#creating event window
+Event_HAVTA = (HAVTA_df[HAVTA_df.index.month == 1], 
+         HAVTA_df[HAVTA_df.index.month == 4],
+         HAVTA_df[HAVTA_df.index.month == 7],
+         HAVTA_df[HAVTA_df.index.month == 10])
+
+Event_HAVTA = pd.concat(Event_HAVTA)
+Event_HAVTA = Event_HAVTA.sort_values(by='dates')
+
+#Estimate window mean
+L_HAVTA = len(HAVTA_df)
+N_HAVTA = len(Event_HAVTA)
+
+mu_HAVTA = HAVTA_df['Ret'].mean()
+ab1_HAVTA = Event_HAVTA['Ret']-mu_HAVTA
+ab2_HAVTA = ALD_df['Ret']-mu_HAVTA
+
+
+sigma_ab2_HAVTA = sum(ab2_HAVTA**2)/(L_HAVTA-1)
+sigma_ab_HAVTA = np.sqrt(sigma_ab2_HAVTA)
+
+sigma_ab2_HAVTA
+
+V_HAVTA = np.identity(N_HAVTA)*sigma_ab2_HAVTA + np.full((N_HAVTA,N_HAVTA),sigma_ab2_HAVTA/sigma_ab2_HAVTA)
+gamma_HAVTA = np.ones((N_HAVTA,1))
+v_car_HAVTA = np.sqrt(gamma_HAVTA.T @ V_HAVTA @ gamma_HAVTA)
+
+scar_HAVTA = gamma_HAVTA.T @ ab1_HAVTA/v_car_HAVTA
+scar_HAVTA
+
+
+#Event study for HVT
+
+#creating event window
+Event_HVT = (HVT_df[HVT_df.index.month == 1], 
+         HVT_df[HVT_df.index.month == 4],
+         HVT_df[HVT_df.index.month == 7],
+         HVT_df[HVT_df.index.month == 10])
+
+Event_HVT = pd.concat(Event_HVT)
+Event_HVT = Event_HVT.sort_values(by='dates')
+
+#Estimate window mean
+L_HVT = len(HVT_df)
+N_HVT = len(Event_HVT)
+
+mu_HVT = HVT_df['Ret'].mean()
+ab1_HVT = Event_HVT['Ret']-mu_HVT
+ab2_HVT = ALD_df['Ret']-mu_HVT
+
+
+sigma_ab2_HVT = sum(ab2_HVT**2)/(L_HVT-1)
+sigma_ab_HVT = np.sqrt(sigma_ab2_HVT)
+
+sigma_ab2_HVT
+
+V_HVT = np.identity(N_HVT)*sigma_ab2_HVT + np.full((N_HVT,N_HVT),sigma_ab2_HVT/sigma_ab2_HVT)
+gamma_HVT = np.ones((N_HVT,1))
+v_car_HVT = np.sqrt(gamma_HVT.T @ V_HVT @ gamma_HVT)
+
+scar_HVT = gamma_HVT.T @ ab1_HVT/v_car_HVT
+scar_HVT
+
+
+#Event study for CY
+
+#creating event window
+Event_CY = (CY_df[CY_df.index.month == 1], 
+         CY_df[CY_df.index.month == 4],
+         CY_df[CY_df.index.month == 7],
+         CY_df[CY_df.index.month == 10])
+
+Event_CY = pd.concat(Event_CY)
+Event_CY = Event_CY.sort_values(by='dates')
+
+#Estimate window mean
+L_CY = len(CY_df)
+N_CY = len(Event_CY)
+
+mu_CY = CY_df['Ret'].mean()
+ab1_CY = Event_CY['Ret']-mu_CY
+ab2_CY = ALD_df['Ret']-mu_CY
+
+
+sigma_ab2_CY = sum(ab2_CY**2)/(L_CY-1)
+sigma_ab_CY = np.sqrt(sigma_ab2_CY)
+
+sigma_ab2_CY
+
+V_CY = np.identity(N_CY)*sigma_ab2_CY + np.full((N_CY,N_CY),sigma_ab2_CY/sigma_ab2_CY)
+gamma_CY = np.ones((N_CY,1))
+v_car_CY = np.sqrt(gamma_CY.T @ V_CY @ gamma_CY)
+
+scar_CY = gamma_CY.T @ ab1_CY/v_car_CY
+scar_CY
+
+
+
+
